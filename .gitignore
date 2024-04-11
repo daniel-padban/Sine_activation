@@ -1,4 +1,3 @@
 /sine-venv
+test_result.csv
 *.pyc
-
-/test_result.csv
