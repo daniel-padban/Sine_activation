@@ -1,5 +1,5 @@
 from numpy import dtype, float32
-from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
 from torch.utils.data import DataLoader,Dataset,TensorDataset
 import pandas as pd
 import torch
@@ -26,7 +26,7 @@ y_data = pd.DataFrame(sw_df[y_col])
 x_q_cols = ['unix_timestamps','precipitation','temp_max','temp_min',]
 
 x_q_data = sw_df[x_q_cols]
-scaler = MinMaxScaler((0,1))
+scaler = StandardScaler()
 x_q_scaled_data = scaler.fit_transform(x_q_data)
 
 # x categorical columns (weather) - one hot encoding
