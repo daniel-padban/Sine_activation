@@ -3,7 +3,7 @@ import torch
 import torch.autograd
 import pandas as pd
 import torch.nn as nn
-from data_loader_2 import train_feats,train_target, val_feats, val_target
+from data_loader import train_feats,train_target, val_feats, val_target
 
 
 
@@ -41,7 +41,7 @@ class SineNet(nn.Module):
 
 model =  SineNet(4,16,1,1).to(device)
 print(model)
-print(train__feats.shape)
+print(train_feats.shape)
 
 '''input_tensor = xq_train_tensor
 print(f"Input tensor:\n{input_tensor}")
@@ -55,7 +55,7 @@ learning_rate = 1e-3
 batch_size = 73
 epochs = 5
 
-result = model(train__feats)
+result = model(train_feats)
 
 result = result.detach().numpy()
 print(f"Result tensor: {result}")
