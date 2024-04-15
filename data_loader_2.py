@@ -1,5 +1,3 @@
-from datetime import date
-from re import S
 import torch
 from torch.utils.data import Dataset,DataLoader
 import pandas as pd
@@ -124,5 +122,11 @@ class SeqDataset(Dataset):
     
     #credit except preprocessing: https://www.crosstab.io/articles/time-series-pytorch-lstm/#create-datasets-that-pytorch-dataloader-can-work-with
 
-dataset = SeqDataset(w_df,target_col=target_col,feat_cols=feat_cols,min_max=min_max,datetimes=True,seq_length=seq_len)
-print(dataset.__getitem__(10))
+train_dataset = SeqDataset(train_df,target_col=target_col,feat_cols=feat_cols,min_max=min_max,datetimes=True,seq_length=seq_len)
+val_dataset = SeqDataset(val_df,target_col=target_col,feat_cols=feat_cols,min_max=min_max,datetimes=True,seq_length=seq_len)
+
+train_dataloader = DataLoader(train_dataset,batch_size=12)
+val_dataloader = DataLoader(val_dataset, batch_size=12)
+
+train_feats, train_target = next(iter(train_dataloader))
+val_feats, val_target = next(iter(val_dataloader))
