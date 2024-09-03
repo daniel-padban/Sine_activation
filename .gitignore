@@ -1,2 +1,3 @@
-/sine-venv
+sine-venv/
+__pycache__/
 *.pyc
