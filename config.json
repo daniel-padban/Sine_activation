@@ -1,0 +1,19 @@
+{
+    "noise_std":0.01,
+    
+    "train_data_len":1000,
+    "train_start":0,
+    "train_end":12.5663706144,
+    
+    "test_data_len":1000,
+    "test_start":15.7079632679,
+    "test_end":21.9911485751,
+
+    "optim":"adamw",
+    "loss":"mse",
+    "lr":1e-3,
+    "w_decay":0,
+
+    "n_epochs":40,
+    "hidden_size":200
+}
