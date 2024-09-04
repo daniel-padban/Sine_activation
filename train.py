@@ -78,11 +78,11 @@ if __name__ == '__main__':
     train_dataloader = DataLoader(train_dataset,
                                 batch_size=batch_size,
                                 shuffle=True,
-                                num_workers=0)
+                                num_workers=2)
     test_dataloader = DataLoader(test_dataset,
                                 batch_size=batch_size,
                                 shuffle=True,
-                                num_workers=0)
+                                num_workers=2)
 
     #trainer
     trainer = WandbTrainer(run,
