@@ -6,6 +6,14 @@ from sine_model import SineNet
 import torch
 from torch.utils.data import DataLoader
 
+device = (
+    'cuda'
+    if torch.cuda.is_available()
+    else 'mps'
+    if torch.backends.mps.is_available()
+    else 'cpu'
+)
+
 config_dict = json2dict('config.json')
 datetime_now = datetime.datetime.now()
 now_str = datetime.datetime.strftime(datetime_now,"%Y%m%d%H%M%S")
@@ -24,9 +32,12 @@ if activation_key not in activation_dict.keys():
 
 activation = activation_dict[activation_key]
 hidden_size= run.config['hidden_size']
-model = SineNet(input_size=1,hidden_size=hidden_size,activation=activation)
+model = SineNet(input_size=1,
+                hidden_size=hidden_size,
+                activation=activation)
+model.to(device=device)
 
-run.watch(model, log_freq=100) #gradients & model parameters
+model_graph = run.watch(model, log_freq=1,log_graph=True,log='all') #gradients & model parameters
 
 #data params
 noise_std = run.config['noise_std']
@@ -38,37 +49,47 @@ test_len = run.config['test_data_len']
 test_start = run.config['test_start']
 test_end = run.config['test_end']
 
+seq_len = run.config['seq_len']
+n_shift = run.config['n_shift']
+
 train_dataset = SineData(noise_std=noise_std,
                          start=train_start,
                          end=train_end,
-                         data_len=train_len)
+                         data_len=train_len,
+                         seq_len=seq_len,
+                         n_shift=n_shift)
 test_dataset = SineData(noise_std=noise_std,
                         start=test_start,
                         end=test_end,
-                        data_len=test_len)
+                        data_len=test_len,
+                        seq_len=seq_len,
+                        n_shift=n_shift)
 
 #dataset artifacts
-train_artifact = train_dataset.create_artifact()
-test_artifact = test_dataset.create_artifact()
+train_artifact = train_dataset.create_artifact('train_data')
+test_artifact = test_dataset.create_artifact('test_data')
 run.log_artifact(train_artifact)
 run.log_artifact(test_artifact)
 
 batch_size = run.config['batch_size']
-batch_size = run.config['seq_len']
+seq_len = run.config['seq_len']
+if __name__ == '__main__':
+    #dataloaders
+    train_dataloader = DataLoader(train_dataset,
+                                batch_size=batch_size,
+                                shuffle=True,
+                                num_workers=0)
+    test_dataloader = DataLoader(test_dataset,
+                                batch_size=batch_size,
+                                shuffle=True,
+                                num_workers=0)
 
-#dataloaders
-train_dataloader = DataLoader(train_dataset,
-                              batch_size=batch_size,
-                              shuffle=True,
-                              num_workers=2)
-test_dataloader = DataLoader(test_dataset,
-                              batch_size=batch_size,
-                              shuffle=True,
-                              num_workers=2)
+    #trainer
+    trainer = WandbTrainer(run,
+                        model=model,
+                        train_dataloader=train_dataloader,
+                        test_dataloader=test_dataloader,
+                        device=device)
+    trainer.full_epoch_loop() #launch training
 
-#trainer
-trainer = WandbTrainer(run,
-                       model=model,
-                       train_dataloader=train_dataloader,
-                       test_dataloader=test_dataloader,
-                       device=)
+    run.finish(exit_code=0)

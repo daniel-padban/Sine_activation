@@ -57,48 +57,65 @@ class WandbTrainer():
     def _train_loop(self):
         lr = self.run.config['lr']
         w_decay = self.run.config['w_decay']
-        optimizer = self.optim_fn(params=self.model.parameters(recurse=True),lr=lr,w_decay=w_decay)
+        optimizer = self.optim_fn(params=self.model.parameters(recurse=True),lr=lr,weight_decay=w_decay)
+        loss_ = self.loss_fn() # init loss func
+        running_loss = 0
         for X, y in self.train_dataloader:
+            optimizer.zero_grad()
             X = X.to(self.device)
             y = y.to(self.device)
             pred = self.model(X)
             last_n_pred = pred[-self.output_len:]
+            descaled_last_n_pred = torch.expm1(last_n_pred) # inverse scaling
             last_n_y = y[-self.output_len:]
             
-            loss = self.loss_fn(last_n_pred,last_n_y)
+
+            loss = loss_(descaled_last_n_pred,last_n_y)
             loss.backward()
+            running_loss += loss.item()
             #update params
             optimizer.step()
-            optimizer.zero_grad()
-            self.run.log({"Batch train loss":loss.item()}) # log loss to wandb
+        mean_train_loss = running_loss / len(self.train_dataloader)
+        return mean_train_loss
+            
 
+        
     def _test_loop(self):
+        loss_ = self.loss_fn() # init loss func
+        running_loss = 0
         for X, y in self.test_dataloader:
             X = X.to(self.device)
             y = y.to(self.device)
             pred = self.model(X)
             last_n_pred = pred[-self.output_len:]
+            descaled_last_n_pred = torch.expm1(last_n_pred) # inverse scaling
             last_n_y = y[-self.output_len:]
-            
-            loss = self.loss_fn(last_n_pred,last_n_y)
-            self.run.log({"Batch test loss":loss.item()})
+
+            loss = loss_(descaled_last_n_pred,last_n_y)
+            running_loss += loss.item()
+        mean_test_loss = running_loss/len(self.test_dataloader)
+        return mean_test_loss
     
     def full_epoch_loop(self):
         epochs = self.run.config['n_epochs']
         for epoch in range(epochs):
-            self._train_loop()
-            self._test_loop()
-            self.run.log({"Epoch": epoch})
+            train_loss = self._train_loop()
+            test_loss = self._test_loop()
+            self.run.log({"Epoch": epoch,"test_loss":test_loss,"train_loss":train_loss})
+            print(f"---------- Full epoch: {epoch+1} ----------")
             
     def train_epoch_loop(self):
         epochs = self.run.config['n_epochs']
         for epoch in range(epochs):
-            self._train_loop()
-            self.run.log({"Epoch": epoch})
+            train_loss = self._train_loop()
+            self.run.log({"Epoch": epoch,"train_loss":train_loss})
+            print(f"---------- Train epoch: {epoch+1} ----------")
+
 
     def test_epoch_loop(self):
         epochs = self.run.config['n_epochs']
         for epoch in range(epochs):
-            self._test_loop()
-            self.run.log({"Epoch": epoch})
+            test_loss = self._test_loop()
+            self.run.log({"Epoch": epoch,"test_loss":test_loss})
+            print(f"---------- Test epoch: {epoch+1} ----------")
 

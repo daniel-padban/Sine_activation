@@ -6,7 +6,7 @@ from torch.nn import functional as F
 
 
 class CustomActivatedLSTMCell(nn.Module):
-    def __init__(self,input_size,hidden_size, act_func:object) -> None:
+    def __init__(self,input_size,hidden_size, act_func:object):
         super().__init__()
 
         self.input_size = input_size
@@ -19,13 +19,8 @@ class CustomActivatedLSTMCell(nn.Module):
 
     def forward(self,x:torch.Tensor,state:tuple): 
         ht_1, ct_1 = state
-        device = x.device
-        self.w_ih = self.w_ih.to(device=device)
-        self.w_hh = self.w_hh.to(device=device)
-        self.b_ih = self.b_ih.to(device=device)
-        self.b_hh = self.b_hh.to(device=device)
 
-        w_xf, w_xi, w_xic, w_xo = torch.chunk(self.w_ih,4,0,)
+        w_xf, w_xi, w_xic, w_xo = torch.chunk(self.w_ih,4,0,) #[hidden_size, input]
         w_hf, w_hi, w_hic, w_ho = torch.chunk(self.w_hh,4,0)
         b_xf, b_xi, b_xic, b_xo = torch.chunk(self.b_ih,4,0)
         b_hf, b_hi, b_hic, b_ho = torch.chunk(self.b_hh,4,0)
@@ -56,7 +51,7 @@ class CustomActivatedLSTMCell(nn.Module):
     
 class CustomLSTMLayer(nn.Module):
         def __init__(self, input_size, hidden_size, activation, batch_first = True):
-
+            super().__init__()
             self.input_size = input_size
             self.hidden_size = hidden_size
             self.activation = activation
@@ -65,25 +60,33 @@ class CustomLSTMLayer(nn.Module):
 
         def forward(self, x:torch.Tensor, init_state = None):
             if self.batch_first:
-                batch_size = x.shape(0)
+                batch_size = x.size(0)
 
             if init_state is not None: 
                 ht, ct = init_state
                 #verify state shapes
-                if ht.shape(0) != batch_size or ht.shape(1)!= self.hidden_size:
+                if ht.size(0) != batch_size or ht.size(1)!= self.hidden_size:
                     raise ValueError(f"Init state 'ht' has shape {ht.shape}, while requiring shape {[batch_size,self.hidden_size]}")
-                if ct.shape(0) != batch_size or ct.shape(1)!= self.hidden_size:
+                if ct.size(0) != batch_size or ct.size(1)!= self.hidden_size:
                     raise ValueError(f"Init state 'ct' has shape {ct.shape}, while requiring shape {[batch_size,self.hidden_size]}")
             else:
                 ht = torch.zeros(batch_size, self.hidden_size,device=x.device)
                 ct = torch.zeros(batch_size, self.hidden_size,device=x.device)
 
             outputs = []
-            for t in range(x.shape(1)): #recurrent through seq_len
+            for t in range(x.size(1)): #recurrent through seq_len
                 xt = x[:, t, :]
-                ht:torch.Tensor; ct:torch.Tensor = self.LSTMcell(xt,(ht,ct))
-                outputs.append(ht.unsqueeze(1)) #[batch_size, 1, hidden_size]
+                ht, ct = self.LSTMcell(xt,(ht,ct))
+                outputs.append(ht)
 
-            outputs = torch.cat(outputs)
+            outputs = torch.stack(outputs) # [seq_len, batch_size, hidden]
+            outputs = outputs.permute(1,0,2) #[batch_size, seq_len, hidden]
             return outputs, (ht,ct)
-    
+
+if __name__ == '__main__':
+    seq_len = 20
+    batch_size = 10
+    model = CustomLSTMLayer(1,20,activation=torch.tanh)
+    test_tensor = torch.rand(size=[10,20,1])
+    test = model(test_tensor)
+    print(test)

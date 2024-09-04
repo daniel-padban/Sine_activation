@@ -1,0 +1,47 @@
+program: train.py
+method: random
+metric:
+  goal: minimize
+  name: test_loss
+parameters:
+  train_data_len:
+    value: 1000
+  test_data_len:
+    value: 200
+  hidden_size:
+    max: 300
+    min: 75
+    distribution: int_uniform
+  output_len:
+   value: 1
+  batch_size:
+    max: 20
+    min: 5
+    distribution: int_uniform
+  activation:
+    value: tanh
+  train_start:
+    value: 0
+  test_start:
+    value: 471.238898038
+  train_end:
+    value: 314.159265359
+  test_end:
+    value: 628.318530718
+  noise_std:
+    value: 0.01
+  n_epochs:
+    value: 20
+  seq_len:
+    max: 40
+    min: 10
+    distribution: int_uniform
+  n_shift:
+    value: 10
+  optim:
+    value: adamw
+  loss:
+    value: mse
+  lr:
+    value: 3e-4
+

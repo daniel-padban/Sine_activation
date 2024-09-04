@@ -19,7 +19,7 @@
     "lr":1e-3,
     "w_decay":0,
 
-    "n_epochs":40,
-    "hidden_size":200,
-    "activation":"sin"
+    "n_epochs":5,
+    "hidden_size":150,
+    "activation":"tanh"
 }

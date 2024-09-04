@@ -15,8 +15,13 @@ class SineData(Dataset):
         X_tensor, raw_y = self._generate_data()
         noisy_y_tensor = self._add_noise(raw_y=raw_y)
         self.shifted_X, self.shifted_y = self.shift_data(X_tensor,noisy_y_tensor)
-        self.sequenced_X, self.sequenced_y = self._sequencing(self.shifted_X,self.shifted_y)
-        
+        sequenced_X, self.sequenced_y = self._sequencing(self.shifted_X,self.shifted_y)
+        if sequenced_X.dim() ==2:
+            sequenced_X = sequenced_X.unsqueeze(2)
+            self.sequenced_y = self.sequenced_y.unsqueeze(2)
+        self.scaled_x = self.scale_x(x=sequenced_X)
+
+
     def _generate_data(self):
         x = torch.linspace(self.start, self.end, self.data_len)
         y = torch.sin(x)
@@ -31,6 +36,9 @@ class SineData(Dataset):
         shifted_y = noisy_y[:-self.n_shift]
         shifted_x = x_tensor[self.n_shift:]
         return shifted_x, shifted_y
+    def scale_x(self,x):
+        scaled_x = torch.log1p(x)
+        return scaled_x
     
     def _sequencing(self,x,y):
         num_seqs = self.data_len // self.seq_len
@@ -48,8 +56,8 @@ class SineData(Dataset):
 
         return sequenced_X, sequenced_y
     
-    def create_artifact(self):
-        dataset_art = wandb.Artifact(type='dataset')
+    def create_artifact(self,name):
+        dataset_art = wandb.Artifact(name=name,type='dataset')
         metadata_dict = {
             "start":self.start,
             "end":self.end,
@@ -60,10 +68,10 @@ class SineData(Dataset):
         return dataset_art
     
     def __len__(self):
-        return self.shifted_X.size(0)
+        return self.sequenced_y.size(0)
 
     def __getitem__(self, idx):
-        X = self.sequenced_X[idx:]
+        X = self.scaled_x[idx]
         y = self.sequenced_y[idx]
         return X, y
     
