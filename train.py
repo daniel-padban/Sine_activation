@@ -57,7 +57,18 @@ batch_size = run.config['batch_size']
 batch_size = run.config['seq_len']
 
 #dataloaders
-train_dataloader = DataLoader(train_dataset,batch_size=)
+train_dataloader = DataLoader(train_dataset,
+                              batch_size=batch_size,
+                              shuffle=True,
+                              num_workers=2)
+test_dataloader = DataLoader(test_dataset,
+                              batch_size=batch_size,
+                              shuffle=True,
+                              num_workers=2)
 
-
-trainer = WandbTrainer(run,model=model,test_dataloader=)
+#trainer
+trainer = WandbTrainer(run,
+                       model=model,
+                       train_dataloader=train_dataloader,
+                       test_dataloader=test_dataloader,
+                       device=)

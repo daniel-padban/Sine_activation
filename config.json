@@ -11,6 +11,8 @@
 
     "batch_size":10,
     "seq_len":20,
+    "n_shift":10,
+    "output_len":1,
 
     "optim":"adamw",
     "loss":"mse",

@@ -19,6 +19,9 @@ class WandbTrainer():
         self.loss_fn = self._get_loss()
         self.optim_fn = self._get_optim()
         self.device = device
+        self.n_shift = self.run.config['n_shift']
+        self.output_len = self.run.config['output_len']
+
 
     def _get_loss(self):
         loss_fn_dict ={
@@ -58,10 +61,11 @@ class WandbTrainer():
         for X, y in self.train_dataloader:
             X = X.to(self.device)
             y = y.to(self.device)
-            
             pred = self.model(X)
+            last_n_pred = pred[-self.output_len:]
+            last_n_y = y[-self.output_len:]
             
-            loss = self.loss_fn(pred,y)
+            loss = self.loss_fn(last_n_pred,last_n_y)
             loss.backward()
             #update params
             optimizer.step()
@@ -73,8 +77,10 @@ class WandbTrainer():
             X = X.to(self.device)
             y = y.to(self.device)
             pred = self.model(X)
-
-            loss = self.loss_fn(pred,y)
+            last_n_pred = pred[-self.output_len:]
+            last_n_y = y[-self.output_len:]
+            
+            loss = self.loss_fn(last_n_pred,last_n_y)
             self.run.log({"Batch test loss":loss.item()})
     
     def full_epoch_loop(self):
