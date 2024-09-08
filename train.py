@@ -74,11 +74,11 @@ if __name__ == '__main__':
     #dataloaders
     train_dataloader = DataLoader(train_dataset,
                                 batch_size=batch_size,
-                                shuffle=True,
+                                shuffle=False,
                                 num_workers=4)
     test_dataloader = DataLoader(test_dataset,
                                 batch_size=batch_size,
-                                shuffle=True,
+                                shuffle=False,
                                 num_workers=4)
 
     #trainer
