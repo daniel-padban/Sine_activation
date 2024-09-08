@@ -1,3 +1,5 @@
+import sklearn
+import sklearn.preprocessing
 import wandb
 import torch
 import torch.optim as optim
@@ -10,12 +12,14 @@ def json2dict(json_path):
         return dict
 
 class WandbTrainer():
-    def __init__(self,run:wandb,model:torch.nn.Module,test_dataloader, train_dataloader, device) -> None:
+    def __init__(self,run:wandb,model:torch.nn.Module,test_dataloader, train_dataloader,train_scaler:sklearn.preprocessing.MinMaxScaler,test_scaler:sklearn.preprocessing.MinMaxScaler, device) -> None:
 
         self.run = run
         self.model = model
         self.train_dataloader = train_dataloader
         self.test_dataloader = test_dataloader
+        self.train_scaler = train_scaler
+        self.test_scaler = test_scaler
         self.loss_fn = self._get_loss()
         self.optim_fn = self._get_optim()
         self.device = device
@@ -66,56 +70,58 @@ class WandbTrainer():
             y = y.to(self.device)
             pred = self.model(X)
             last_n_pred = pred[-self.output_len:]
-            descaled_last_n_pred = torch.expm1(last_n_pred) # inverse scaling
-            last_n_y = y[-self.output_len:]
             
+            last_n_y = y[-self.output_len:]
 
-            loss = loss_(descaled_last_n_pred,last_n_y)
+            loss = loss_(last_n_pred,last_n_y)
             loss.backward()
             running_loss += loss.item()
             #update params
             optimizer.step()
         mean_train_loss = running_loss / len(self.train_dataloader)
-        return mean_train_loss
+        return mean_train_loss, pred
             
 
         
     def _test_loop(self):
         loss_ = self.loss_fn() # init loss func
         running_loss = 0
-        for X, y in self.test_dataloader:
-            X = X.to(self.device)
-            y = y.to(self.device)
-            pred = self.model(X)
-            last_n_pred = pred[-self.output_len:]
-            descaled_last_n_pred = torch.expm1(last_n_pred) # inverse scaling
-            last_n_y = y[-self.output_len:]
+        with torch.no_grad():
+            for X, y in self.test_dataloader:
+                X = X.to(self.device)
+                y = y.to(self.device)
+                pred = self.model(X)
+                last_n_pred = pred[-self.output_len:]
+                last_n_pred_np = last_n_pred.cpu().numpy()
+                descaled_last_n_pred_np = self.test_scaler.inverse_transform(last_n_pred_np) # inverse scaling
+                descaled_last_n_pred = torch.tensor(descaled_last_n_pred_np,device=self.device)
+                last_n_y = y[-self.output_len:]
 
-            loss = loss_(descaled_last_n_pred,last_n_y)
-            running_loss += loss.item()
-        mean_test_loss = running_loss/len(self.test_dataloader)
-        return mean_test_loss
+                loss = loss_(descaled_last_n_pred,last_n_y)
+                running_loss += loss.item()
+            mean_test_loss = running_loss/len(self.test_dataloader)
+            return mean_test_loss, pred
     
     def full_epoch_loop(self):
         epochs = self.run.config['n_epochs']
         for epoch in range(epochs):
-            train_loss = self._train_loop()
-            test_loss = self._test_loop()
+            train_loss, train_pred = self._train_loop()
+            test_loss,test_pred = self._test_loop()
             self.run.log({"Epoch": epoch,"test_loss":test_loss,"train_loss":train_loss})
             print(f"---------- Full epoch: {epoch+1} ----------")
+        self.run
             
     def train_epoch_loop(self):
         epochs = self.run.config['n_epochs']
         for epoch in range(epochs):
-            train_loss = self._train_loop()
+            train_loss,train_pred = self._train_loop()
             self.run.log({"Epoch": epoch,"train_loss":train_loss})
             print(f"---------- Train epoch: {epoch+1} ----------")
-
 
     def test_epoch_loop(self):
         epochs = self.run.config['n_epochs']
         for epoch in range(epochs):
-            test_loss = self._test_loop()
+            test_loss,test_pred = self._test_loop()
             self.run.log({"Epoch": epoch,"test_loss":test_loss})
             print(f"---------- Test epoch: {epoch+1} ----------")
 

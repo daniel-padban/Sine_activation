@@ -1,28 +1,31 @@
+import numpy as np
 import torch
 from torch.utils.data import Dataset
 import wandb
+import sklearn.preprocessing
 
 class SineData(Dataset):
-    def __init__(self, noise_std:float, start:float, end:float, data_len:int,seq_len:int,n_shift:int):
+    def __init__(self, start:float, end:float, step_size:float,seq_len:int,noise_std = None,):
         self.noise_std = noise_std
         self.start = start
         self.end = end
-        self.data_len = data_len
+        self.step_size = step_size
         self.seq_len = seq_len
-        self.n_shift = n_shift
 
         X_tensor, raw_y = self._generate_data()
-        noisy_y_tensor = self._add_noise(raw_y=raw_y)
-        self.shifted_X, self.shifted_y = self.shift_data(X_tensor,noisy_y_tensor)
-        sequenced_X, self.sequenced_y = self._sequencing(self.shifted_X,self.shifted_y)
-        if sequenced_X.dim() ==2:
-            sequenced_X = sequenced_X.unsqueeze(2)
+        if noise_std is not None: #should noise be added and how much?
+            noisy_y_tensor = self._add_noise(raw_y=raw_y)
+            self.sequenced_X, self.sequenced_y = self._sequencing(X_tensor,noisy_y_tensor)
+        else:
+            self.sequenced_X, self.sequenced_y = self._sequencing(X_tensor,raw_y)
+
+        if self.sequenced_X.dim() ==2:
+            self.sequenced_X = self.sequenced_X.unsqueeze(2)
             self.sequenced_y = self.sequenced_y.unsqueeze(2)
-        self.scaled_x = self.scale_x(x=sequenced_X)
 
 
     def _generate_data(self):
-        x = torch.linspace(self.start, self.end, self.data_len)
+        x = torch.arange(start=self.start, end=self.end, step=self.step_size)
         y = torch.sin(x)
         return x, y
     
@@ -31,22 +34,24 @@ class SineData(Dataset):
         noisy_y = raw_y + noise
         return noisy_y
     
-    def shift_data(self, x_tensor, noisy_y,):
-        shifted_y = noisy_y[:-self.n_shift]
-        shifted_x = x_tensor[self.n_shift:]
-        return shifted_x, shifted_y
-    def scale_x(self,x):
-        scaled_x = torch.log1p(x)
-        return scaled_x
+    ''' def scale_x(self,x:torch.Tensor):
+        scaler = sklearn.preprocessing.MinMaxScaler((0,1))
+        np_x = x.numpy(force=True)
+        np_x = np_x.reshape(-1,1) #fit_transform requires reshaping of 1d arrays
+        scaled_x = scaler.fit_transform(np_x)
+        scaled_x_tensor = torch.tensor(scaled_x)
+        self.scaler = scaler
+        return scaled_x_tensor'''
     
-    def _sequencing(self,x,y):
-        num_seqs = self.data_len // self.seq_len
-        required_len = (self.seq_len* num_seqs) + self.n_shift # n=n_shift rows are removed already
-        while required_len > self.data_len: # handle cases where self.data_len is less than the required len
+    def _sequencing(self,x:torch.Tensor,y:torch.Tensor):
+        data_len = y.size(0)
+        num_seqs = data_len // self.seq_len
+        required_len = (self.seq_len* num_seqs)  # n=n_shift rows are removed already
+        while required_len > data_len: # handle cases where data_len is less than the required len
             num_seqs -= 1 # reduce number of seqs needed
             required_len = (num_seqs * self.seq_len) + self.n_shift 
         
-        n_rows_to_drop = self.data_len - required_len
+        n_rows_to_drop = data_len - required_len
         req_len_X = x[:-n_rows_to_drop]
         req_len_y = y[:-n_rows_to_drop]
 
@@ -60,7 +65,7 @@ class SineData(Dataset):
         metadata_dict = {
             "start":self.start,
             "end":self.end,
-            "data_len":self.data_len,
+            "step_size":self.step_size,
             "noise_std":self.noise_std
         }
         dataset_art.metadata = metadata_dict
@@ -70,7 +75,6 @@ class SineData(Dataset):
         return self.sequenced_y.size(0)
 
     def __getitem__(self, idx):
-        X = self.scaled_x[idx]
+        X = self.sequenced_X[idx]
         y = self.sequenced_y[idx]
         return X, y
-    

@@ -2,7 +2,7 @@ import datetime
 import wandb
 from trainer_def import WandbTrainer, json2dict
 from dataset_def import SineData
-from sine_model import SineNet
+from torch_lstm_model import TorchLSTM
 import torch
 from torch.utils.data import DataLoader
 if __name__ == '__main__':
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     datetime_now = datetime.datetime.now()
     now_str = datetime.datetime.strftime(datetime_now,"%Y%m%d%H%M%S")
     run_id = now_str
-    run = wandb.init(project='Sine-Gates',config=config_dict)
+    run = wandb.init(project='Sine-Gates',config=config_dict,name='torch-LSTM-1')
 
     activation_dict = {
         'tanh':torch.tanh,
@@ -32,9 +32,7 @@ if __name__ == '__main__':
 
     activation = activation_dict[activation_key]
     hidden_size= run.config['hidden_size']
-    model = SineNet(input_size=1,
-                    hidden_size=hidden_size,
-                    activation=activation)
+    model = TorchLSTM(input_size=1,hidden_size=hidden_size,)
     model.to(device=device)
 
     model_graph = run.watch(model, log_freq=1,log_graph=True,log='all') #gradients & model parameters
@@ -84,15 +82,11 @@ if __name__ == '__main__':
                                 shuffle=True,
                                 num_workers=4)
 
-    train_scaler = train_dataset.scaler
-    test_scaler = test_dataset.scaler
     #trainer
     trainer = WandbTrainer(run,
                         model=model,
                         train_dataloader=train_dataloader,
                         test_dataloader=test_dataloader,
-                        train_scaler=train_scaler,
-                        test_scaler=test_scaler,
                         device=device)
     trainer.full_epoch_loop() #launch training
 

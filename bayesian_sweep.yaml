@@ -4,10 +4,8 @@ metric:
   goal: minimize
   name: test_loss
 parameters:
-  train_data_len:
-    value: 1000
-  test_data_len:
-    value: 200
+  step_size:
+    value: 0.5
   hidden_size:
     value: 
   output_len:

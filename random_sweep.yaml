@@ -4,10 +4,8 @@ metric:
   goal: minimize
   name: test_loss
 parameters:
-  train_data_len:
-    value: 1000
-  test_data_len:
-    value: 200
+  step_size:
+    value: 0.5
   hidden_size:
     max: 300
     min: 75
@@ -31,7 +29,7 @@ parameters:
   noise_std:
     value: 0.01
   n_epochs:
-    value: 20
+    value: 50
   seq_len:
     max: 40
     min: 10
