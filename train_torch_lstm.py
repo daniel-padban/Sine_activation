@@ -19,7 +19,7 @@ if __name__ == '__main__':
     datetime_now = datetime.datetime.now()
     now_str = datetime.datetime.strftime(datetime_now,"%Y%m%d%H%M%S")
     run_id = now_str
-    run = wandb.init(project='Sine-Gates',config=config_dict)
+    run = wandb.init(project='Sine-Gates',config=config_dict,group='Torch-LSTM')
     
     activation_dict = {
         'tanh':torch.tanh,
