@@ -11,11 +11,11 @@ class SineData(Dataset):
         self.seq_len = seq_len
 
         X_tensor, raw_y = self._generate_data()
-        if noise_std is not None: #should noise be added and how much?
+        if noise_std == 0: #should noise be added and how much?
+            self.sequenced_X, self.sequenced_y = self._sequencing(X_tensor,raw_y)
+        else:
             noisy_y_tensor = self._add_noise(raw_y=raw_y)
             self.sequenced_X, self.sequenced_y = self._sequencing(X_tensor,noisy_y_tensor)
-        else:
-            self.sequenced_X, self.sequenced_y = self._sequencing(X_tensor,raw_y)
 
         if self.sequenced_X.dim() ==2:
             self.sequenced_X = self.sequenced_X.unsqueeze(2)

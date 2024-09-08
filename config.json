@@ -1,5 +1,5 @@
 {
-    "noise_std":0.01,
+    "noise_std":0,
     "step_size":0.5,
     
     "train_start":0,
