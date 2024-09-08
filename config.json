@@ -8,7 +8,7 @@
     "test_start":500,
     "test_end":800,
 
-    "batch_size":10,
+    "batch_size":1,
     "seq_len":20,
     "output_len":1,
 
