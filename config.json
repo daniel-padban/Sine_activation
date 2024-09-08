@@ -3,20 +3,21 @@
     "step_size":0.5,
     
     "train_start":0,
-    "train_end":12.5663706144,
+    "train_end":400,
     
-    "test_start":15.7079632679,
-    "test_end":21.9911485751,
+    "test_start":500,
+    "test_end":800,
 
     "batch_size":10,
     "seq_len":20,
+    "output_len":1,
 
     "optim":"adamw",
     "loss":"mse",
-    "lr":1e-3,
+    "lr":3e-4,
     "w_decay":0,
 
-    "n_epochs":5,
-    "hidden_size":150,
+    "n_epochs":10,
+    "hidden_size":15,
     "activation":"tanh"
 }

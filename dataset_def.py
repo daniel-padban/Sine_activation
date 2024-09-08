@@ -1,8 +1,6 @@
-import numpy as np
 import torch
 from torch.utils.data import Dataset
 import wandb
-import sklearn.preprocessing
 
 class SineData(Dataset):
     def __init__(self, start:float, end:float, step_size:float,seq_len:int,noise_std = None,):
@@ -52,8 +50,12 @@ class SineData(Dataset):
             required_len = (num_seqs * self.seq_len) + self.n_shift 
         
         n_rows_to_drop = data_len - required_len
-        req_len_X = x[:-n_rows_to_drop]
-        req_len_y = y[:-n_rows_to_drop]
+        if n_rows_to_drop == 0:
+            req_len_X = x
+            req_len_y = y
+        else:
+            req_len_X = x[:-n_rows_to_drop]
+            req_len_y = y[:-n_rows_to_drop]
 
         sequenced_X = torch.reshape(req_len_X,[num_seqs,self.seq_len])
         sequenced_y = torch.reshape(req_len_y,[num_seqs,self.seq_len])

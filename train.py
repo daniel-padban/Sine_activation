@@ -13,13 +13,13 @@ if __name__ == '__main__':
         if torch.backends.mps.is_available()
         else 'cpu'
     )
-
+    print(device)
     config_dict = json2dict('config.json')
     datetime_now = datetime.datetime.now()
     now_str = datetime.datetime.strftime(datetime_now,"%Y%m%d%H%M%S")
     run_id = now_str
     run = wandb.init(project='Sine-Gates',config=config_dict)
-
+    
     activation_dict = {
         'tanh':torch.tanh,
         'sin':torch.sin,
@@ -41,29 +41,26 @@ if __name__ == '__main__':
 
     #data params
     noise_std = run.config['noise_std']
-    train_len = run.config['train_data_len']
+    step_size = run.config['step_size']
+
     train_start = run.config['train_start']
     train_end = run.config['train_end']
 
-    test_len = run.config['test_data_len']
     test_start = run.config['test_start']
     test_end = run.config['test_end']
 
     seq_len = run.config['seq_len']
-    n_shift = run.config['n_shift']
 
     train_dataset = SineData(noise_std=noise_std,
                             start=train_start,
                             end=train_end,
-                            data_len=train_len,
-                            seq_len=seq_len,
-                            n_shift=n_shift)
+                            step_size=step_size,
+                            seq_len=seq_len,)
     test_dataset = SineData(noise_std=noise_std,
                             start=test_start,
                             end=test_end,
-                            data_len=test_len,
-                            seq_len=seq_len,
-                            n_shift=n_shift)
+                            step_size=step_size,
+                            seq_len=seq_len,)
 
     #dataset artifacts
     train_artifact = train_dataset.create_artifact('train_data')
@@ -84,15 +81,11 @@ if __name__ == '__main__':
                                 shuffle=True,
                                 num_workers=4)
 
-    train_scaler = train_dataset.scaler
-    test_scaler = test_dataset.scaler
     #trainer
     trainer = WandbTrainer(run,
                         model=model,
                         train_dataloader=train_dataloader,
                         test_dataloader=test_dataloader,
-                        train_scaler=train_scaler,
-                        test_scaler=test_scaler,
                         device=device)
     trainer.full_epoch_loop() #launch training
 

@@ -12,18 +12,15 @@ def json2dict(json_path):
         return dict
 
 class WandbTrainer():
-    def __init__(self,run:wandb,model:torch.nn.Module,test_dataloader, train_dataloader,train_scaler:sklearn.preprocessing.MinMaxScaler,test_scaler:sklearn.preprocessing.MinMaxScaler, device) -> None:
+    def __init__(self,run:wandb,model:torch.nn.Module,test_dataloader, train_dataloader, device) -> None:
 
         self.run = run
         self.model = model
         self.train_dataloader = train_dataloader
         self.test_dataloader = test_dataloader
-        self.train_scaler = train_scaler
-        self.test_scaler = test_scaler
         self.loss_fn = self._get_loss()
         self.optim_fn = self._get_optim()
         self.device = device
-        self.n_shift = self.run.config['n_shift']
         self.output_len = self.run.config['output_len']
 
 
@@ -86,18 +83,17 @@ class WandbTrainer():
     def _test_loop(self):
         loss_ = self.loss_fn() # init loss func
         running_loss = 0
+        self.model.eval()
         with torch.no_grad():
             for X, y in self.test_dataloader:
                 X = X.to(self.device)
                 y = y.to(self.device)
                 pred = self.model(X)
                 last_n_pred = pred[-self.output_len:]
-                last_n_pred_np = last_n_pred.cpu().numpy()
-                descaled_last_n_pred_np = self.test_scaler.inverse_transform(last_n_pred_np) # inverse scaling
-                descaled_last_n_pred = torch.tensor(descaled_last_n_pred_np,device=self.device)
+                
                 last_n_y = y[-self.output_len:]
 
-                loss = loss_(descaled_last_n_pred,last_n_y)
+                loss = loss_(last_n_pred,last_n_y)
                 running_loss += loss.item()
             mean_test_loss = running_loss/len(self.test_dataloader)
             return mean_test_loss, pred
