@@ -1,9 +1,9 @@
 import datetime
 import wandb
-import torch_lstm_model
+from torch_lstm_model import TorchLSTMNet
 from trainer_def import WandbTrainer, json2dict
 from dataset_def import SineData
-from torch_lstm_model import TorchLSTMNet
+from sine_model import SineNet
 import torch
 from torch.utils.data import DataLoader
 if __name__ == '__main__':
@@ -33,11 +33,14 @@ if __name__ == '__main__':
 
     activation = activation_dict[activation_key]
     hidden_size= run.config['hidden_size']
-    model = TorchLSTMNet(input_size=1,
-                    hidden_size=hidden_size,)
+    n_shift = run.config['n_shift']
+    model = TorchLSTMNet(input_size=20,
+                    hidden_size=hidden_size,
+                    activation=activation,
+                    n_shift = n_shift)
     model.to(device=device)
 
-    model_graph = run.watch(model, log_freq=1,log_graph=True,log='all') #gradients & model parameters
+    model_graph = run.watch(model, log_freq=50,log_graph=True,log='all') #gradients & model parameters
 
     #data params
     noise_std = run.config['noise_std']
@@ -55,11 +58,13 @@ if __name__ == '__main__':
                             start=train_start,
                             end=train_end,
                             step_size=step_size,
+                            n_shift=n_shift,
                             seq_len=seq_len,)
     test_dataset = SineData(noise_std=noise_std,
                             start=test_start,
                             end=test_end,
                             step_size=step_size,
+                            n_shift=n_shift,
                             seq_len=seq_len,)
 
     #dataset artifacts
@@ -74,11 +79,11 @@ if __name__ == '__main__':
     #dataloaders
     train_dataloader = DataLoader(train_dataset,
                                 batch_size=batch_size,
-                                shuffle=True,
+                                shuffle=False,
                                 num_workers=4)
     test_dataloader = DataLoader(test_dataset,
                                 batch_size=batch_size,
-                                shuffle=True,
+                                shuffle=False,
                                 num_workers=4)
 
     #trainer
