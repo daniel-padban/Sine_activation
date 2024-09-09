@@ -7,7 +7,7 @@ class SineNet(nn.Module):
         self.input_size = input_size
         self.hidden_size = hidden_size
 
-        self.lstm1 = CustomLSTMLayer(input_size=hidden_size,hidden_size=hidden_size,activation=activation)
+        self.lstm1 = CustomLSTMLayer(input_size=input_size,hidden_size=hidden_size,activation=activation)
         self.fco = nn.Linear(in_features=hidden_size,out_features=1) 
 
     def forward(self, x):
