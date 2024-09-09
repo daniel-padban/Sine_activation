@@ -85,6 +85,6 @@ for epoch in range(run.config['n_epochs']):
     loss.backward()
     optimizer.step()
 
-    run.log({"Train_epoch": epoch,"train_loss":loss})
+    run.log({"Train_epoch": epoch,"train_loss":loss.item()})
 
 run.finish(exit_code=0)
