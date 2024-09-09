@@ -72,7 +72,7 @@ optimizer = optim.Adam(model.parameters(), lr=run.config['lr'])
 
 loss_curve = []
 
-for epoch in range(run.config['epochs']):
+for epoch in range(run.config['n_epochs']):
     print(f'---------- Epoch: {epoch+1} ----------')
     loss_total = 0
     
