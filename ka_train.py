@@ -61,7 +61,7 @@ if activation_key not in activation_dict.keys():
 
 activation = activation_dict[activation_key]
 
-model = SineNet(n_neurons, look_back,activation=activation).double()
+model = SineNet(n_neurons, look_back,activation=activation)
 
 model.to(device=device)
 
