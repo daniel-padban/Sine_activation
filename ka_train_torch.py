@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from ka_SineNet import SineNet
+from ka_torch_lstm import SineNet
 import wandb
 from trainer_def import json2dict
 
@@ -49,19 +49,7 @@ train_labels = torch.stack(train_labels).unsqueeze(0).unsqueeze(2).to(device=dev
 n_neurons = run.config['hidden_size']
 
 
-activation_dict = {
-    'tanh':torch.tanh,
-    'sin':torch.sin,
-    'cos':torch.cos,
-    'relu':torch.relu,
-    'silu':torch.nn.SiLU(),}
-activation_key = run.config['activation'].lower()
-if activation_key not in activation_dict.keys():
-    raise ValueError(f'Key "activation" in config is not an available option. key: {activation_key}')
-
-activation = activation_dict[activation_key]
-
-model = SineNet(input_size=look_back, hidden_size=n_neurons,activation=activation)
+model = SineNet(input_size=look_back, hidden_size=n_neurons,)
 
 model.to(device=device)
 
