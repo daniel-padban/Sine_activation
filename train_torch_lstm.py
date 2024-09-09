@@ -23,7 +23,8 @@ if __name__ == '__main__':
     
     hidden_size= run.config['hidden_size']
     n_shift = run.config['n_shift']
-    model = TorchLSTMNet(input_size=20,
+    seq_len = run.config['seq_len']
+    model = TorchLSTMNet(input_size=seq_len,
                     hidden_size=hidden_size,
                     n_shift = n_shift)
     model.to(device=device)
@@ -40,7 +41,6 @@ if __name__ == '__main__':
     test_start = run.config['test_start']
     test_end = run.config['test_end']
 
-    seq_len = run.config['seq_len']
 
     train_dataset = SineData(noise_std=noise_std,
                             start=train_start,

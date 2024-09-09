@@ -33,7 +33,8 @@ if __name__ == '__main__':
     activation = activation_dict[activation_key]
     hidden_size= run.config['hidden_size']
     n_shift = run.config['n_shift']
-    model = SineNet(input_size=20,
+    seq_len = run.config['seq_len']
+    model = SineNet(input_size=seq_len,
                     hidden_size=hidden_size,
                     activation=activation,
                     n_shift = n_shift)
@@ -51,7 +52,6 @@ if __name__ == '__main__':
     test_start = run.config['test_start']
     test_end = run.config['test_end']
 
-    seq_len = run.config['seq_len']
 
     train_dataset = SineData(noise_std=noise_std,
                             start=train_start,
