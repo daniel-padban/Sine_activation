@@ -21,22 +21,10 @@ if __name__ == '__main__':
     run_id = now_str
     run = wandb.init(project='Sine-Gates',config=config_dict,group='Torch-LSTM')
     
-    activation_dict = {
-        'tanh':torch.tanh,
-        'sin':torch.sin,
-        'cos':torch.cos,
-        'relu':torch.relu,
-        'silu':torch.nn.SiLU(),}
-    activation_key = run.config['activation'].lower()
-    if activation_key not in activation_dict.keys():
-        raise ValueError(f'Key "activation" in config is not an available option. key: {activation_key}')
-
-    activation = activation_dict[activation_key]
     hidden_size= run.config['hidden_size']
     n_shift = run.config['n_shift']
     model = TorchLSTMNet(input_size=20,
                     hidden_size=hidden_size,
-                    activation=activation,
                     n_shift = n_shift)
     model.to(device=device)
 
