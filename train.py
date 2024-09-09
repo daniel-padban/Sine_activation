@@ -5,6 +5,7 @@ from dataset_def import SineData
 from sine_model import SineNet
 import torch
 from torch.utils.data import DataLoader
+
 if __name__ == '__main__':
     device = (
         'cuda'

@@ -77,5 +77,5 @@ class SineData(Dataset):
 
     def __getitem__(self, idx):
         X = self.sequenced_X[idx]
-        y = self.sequenced_y[idx]
+        y = self.sequenced_y[idx][:-self.n_shift]
         return X, y
