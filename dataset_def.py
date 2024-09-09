@@ -3,23 +3,25 @@ from torch.utils.data import Dataset
 import wandb
 
 class SineData(Dataset):
-    def __init__(self, start:float, end:float, step_size:float,seq_len:int,noise_std = None,):
+    def __init__(self, start:float, end:float, step_size:float,n_shift:int,seq_len:int,noise_std = None,):
         self.noise_std = noise_std
         self.start = start
         self.end = end
         self.step_size = step_size
+        self.n_shift = n_shift
         self.seq_len = seq_len
 
         X_tensor, raw_y = self._generate_data()
+        shifted_X,shifted_y = self.shift_data(X_tensor,raw_y)
         if noise_std == 0: #should noise be added and how much?
-            self.sequenced_X, self.sequenced_y = self._sequencing(X_tensor,raw_y)
+            self.sequenced_X, self.sequenced_y = self._sequencing(shifted_X,shifted_y)
         else:
-            noisy_y_tensor = self._add_noise(raw_y=raw_y)
-            self.sequenced_X, self.sequenced_y = self._sequencing(X_tensor,noisy_y_tensor)
+            noisy_y_tensor = self._add_noise(raw_y=shifted_y)
+            self.sequenced_X, self.sequenced_y = self._sequencing(shifted_X,noisy_y_tensor)
 
         if self.sequenced_X.dim() ==2:
-            self.sequenced_X = self.sequenced_X.unsqueeze(2)
-            self.sequenced_y = self.sequenced_y.unsqueeze(2)
+            self.sequenced_X = self.sequenced_X.unsqueeze(0)
+            self.sequenced_y = self.sequenced_y.unsqueeze(0)
 
 
     def _generate_data(self):
@@ -32,22 +34,19 @@ class SineData(Dataset):
         noisy_y = raw_y + noise
         return noisy_y
     
-    ''' def scale_x(self,x:torch.Tensor):
-        scaler = sklearn.preprocessing.MinMaxScaler((0,1))
-        np_x = x.numpy(force=True)
-        np_x = np_x.reshape(-1,1) #fit_transform requires reshaping of 1d arrays
-        scaled_x = scaler.fit_transform(np_x)
-        scaled_x_tensor = torch.tensor(scaled_x)
-        self.scaler = scaler
-        return scaled_x_tensor'''
+    def shift_data(self,x,y):
+        shifted_x = x[:-self.n_shift] #drop first n rows
+        shifted_y = y[self.n_shift:] # drop last n rows
+
+        return shifted_x, shifted_y
     
     def _sequencing(self,x:torch.Tensor,y:torch.Tensor):
         data_len = y.size(0)
         num_seqs = data_len // self.seq_len
-        required_len = (self.seq_len* num_seqs)  # n=n_shift rows are removed already
+        required_len = (self.seq_len* num_seqs) # n=n_shift rows are removed already
         while required_len > data_len: # handle cases where data_len is less than the required len
             num_seqs -= 1 # reduce number of seqs needed
-            required_len = (num_seqs * self.seq_len) + self.n_shift 
+            required_len = (num_seqs * self.seq_len) 
         
         n_rows_to_drop = data_len - required_len
         if n_rows_to_drop == 0:

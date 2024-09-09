@@ -8,9 +8,9 @@
     "test_start":500,
     "test_end":800,
 
+    "n_shift":5,
     "batch_size":1,
     "seq_len":20,
-    "output_len":1,
 
     "optim":"adam",
     "loss":"mse",

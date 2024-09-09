@@ -21,7 +21,7 @@ class WandbTrainer():
         self.loss_fn = self._get_loss()
         self.optim_fn = self._get_optim()
         self.device = device
-        self.output_len = self.run.config['output_len']
+        self.n_shift = self.run.config['n_shift']
 
 
     def _get_loss(self):
@@ -66,11 +66,10 @@ class WandbTrainer():
             X = X.to(self.device)
             y = y.to(self.device)
             pred = self.model(X)
-            last_n_pred = pred[-self.output_len:]
             
-            last_n_y = y[-self.output_len:]
+            last_n_y = y[:,:,-self.n_shift:]
 
-            loss = loss_(last_n_pred,last_n_y)
+            loss = loss_(pred,last_n_y)
             loss.backward()
             running_loss += loss.item()
             #update params
@@ -89,11 +88,10 @@ class WandbTrainer():
                 X = X.to(self.device)
                 y = y.to(self.device)
                 pred = self.model(X)
-                last_n_pred = pred[-self.output_len:]
                 
-                last_n_y = y[-self.output_len:]
+                last_n_y = y[:,:,-self.n_shift:]
 
-                loss = loss_(last_n_pred,last_n_y)
+                loss = loss_(pred,last_n_y)
                 running_loss += loss.item()
             mean_test_loss = running_loss/len(self.test_dataloader)
             return mean_test_loss, pred

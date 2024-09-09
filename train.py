@@ -32,12 +32,14 @@ if __name__ == '__main__':
 
     activation = activation_dict[activation_key]
     hidden_size= run.config['hidden_size']
-    model = SineNet(input_size=1,
+    n_shift = run.config['n_shift']
+    model = SineNet(input_size=20,
                     hidden_size=hidden_size,
-                    activation=activation)
+                    activation=activation,
+                    n_shift = n_shift)
     model.to(device=device)
 
-    model_graph = run.watch(model, log_freq=1,log_graph=True,log='all') #gradients & model parameters
+    model_graph = run.watch(model, log_freq=50,log_graph=True,log='all') #gradients & model parameters
 
     #data params
     noise_std = run.config['noise_std']
@@ -55,11 +57,13 @@ if __name__ == '__main__':
                             start=train_start,
                             end=train_end,
                             step_size=step_size,
+                            n_shift=n_shift,
                             seq_len=seq_len,)
     test_dataset = SineData(noise_std=noise_std,
                             start=test_start,
                             end=test_end,
                             step_size=step_size,
+                            n_shift=n_shift,
                             seq_len=seq_len,)
 
     #dataset artifacts
