@@ -43,8 +43,8 @@ train_labels = []
 for i in range(len(train_series)-look_back):
     train_dataset.append(train_series[i:i+look_back])
     train_labels.append(train_series[i+look_back])
-train_dataset = torch.stack(train_dataset).unsqueeze(0)
-train_labels = torch.stack(train_labels).unsqueeze(0).unsqueeze(2)
+train_dataset = torch.stack(train_dataset).unsqueeze(0).to(device=device)
+train_labels = torch.stack(train_labels).unsqueeze(0).unsqueeze(2).to(device=device)
 
 n_neurons = run.config['hidden_size']
 
