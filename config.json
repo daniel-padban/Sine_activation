@@ -14,10 +14,10 @@
 
     "optim":"adam",
     "loss":"mse",
-    "lr":1e-3,
+    "lr":1e-4,
     "w_decay":0,
 
     "n_epochs":300,
-    "hidden_size":4,
+    "hidden_size":10,
     "activation":"tanh"
 }
