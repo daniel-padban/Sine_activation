@@ -12,9 +12,9 @@
     "seq_len":20,
     "output_len":1,
 
-    "optim":"adamw",
+    "optim":"adam",
     "loss":"mse",
-    "lr":3e-4,
+    "lr":1e-3,
     "w_decay":0,
 
     "n_epochs":300,
