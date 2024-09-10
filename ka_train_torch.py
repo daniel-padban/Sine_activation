@@ -23,13 +23,13 @@ step_size = run.config['step_size']
 train_start = run.config['train_start']
 train_end = run.config['train_end']
 X_train = torch.arange(train_start,train_end,step_size)
-y_train = torch.sin(X_train)
-
+y_train = torch.sin(X_train) + torch.sin(3*X_train)/3 + torch.sin(5*X_train)/5
 
 test_end = run.config['test_end']
 test_start = run.config['test_start']
 X_test = torch.arange(test_start,test_end,step_size)
-y_test = torch.sin(X_test)
+y_test = torch.sin(X_test) + torch.sin(3*X_test)/3 + torch.sin(5*X_test)/5
+
 
 n_features = 1
 

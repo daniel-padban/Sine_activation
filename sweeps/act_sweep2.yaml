@@ -1,0 +1,41 @@
+program: ka_train.py
+method: random
+metric:
+  goal: minimize
+  name: test_loss
+parameters:
+  step_size:
+    value: 0.5
+  hidden_size:
+    max: 20
+    min: 1
+    distribution: int_uniform
+  activation:
+    values:
+      - tanh
+      - sin
+      - cos
+    distribution: categorical
+  train_start:
+    value: 0
+  test_start:
+    value: 100
+  train_end:
+    value: 100
+  test_end:
+    value: 200
+  noise_std:
+    value: 0.01
+  n_epochs:
+    value: 300
+  seq_len:
+    value: 20
+  optim:
+    value: adam
+  loss:
+    value: mse
+  lr:
+    max: 0.01
+    min: 0.0001
+    distribution: uniform
+

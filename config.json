@@ -12,9 +12,9 @@
     "batch_size":1,
     "seq_len":20,
 
-    "optim":"adam",
+    "optim":"adamw",
     "loss":"mse",
-    "lr":1e-3   ,
+    "lr":1e-3,
     "w_decay":0,
 
     "n_epochs":300,
