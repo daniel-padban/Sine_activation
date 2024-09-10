@@ -1,4 +1,6 @@
 import torch
+torch.manual_seed(100)
+torch.cuda.manual_seed(100)
 import torch.nn as nn
 import torch.optim as optim
 from ka_SineNet import SineNet
