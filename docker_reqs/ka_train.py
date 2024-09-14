@@ -1,11 +1,13 @@
 import torch
 torch.manual_seed(100)
 torch.cuda.manual_seed(100)
+torch.cuda.manual_seed_all(100)
 import torch.nn as nn
 import torch.optim as optim
 from ka_SineNet import SineNet
 import wandb
 from trainer_def import json2dict
+from init_w import custom_init_weights
 
 
 device = (
@@ -65,6 +67,7 @@ activation = activation_dict[activation_key]
 
 model = SineNet(input_size=look_back, hidden_size=n_neurons,activation=activation)
 
+model.apply(custom_init_weights)
 model.to(device=device)
 model_graph = run.watch(model, log_freq=50,log_graph=True,log='all')
 
