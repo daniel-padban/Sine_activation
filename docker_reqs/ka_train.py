@@ -66,7 +66,6 @@ activation = activation_dict[activation_key]
 model = SineNet(input_size=look_back, hidden_size=n_neurons,activation=activation)
 
 model.to(device=device)
-
 model_graph = run.watch(model, log_freq=50,log_graph=True,log='all')
 
 loss_function = nn.MSELoss()

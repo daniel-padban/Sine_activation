@@ -17,7 +17,7 @@
     "lr":1e-3,
     "w_decay":0,
 
-    "n_epochs":300,
+    "n_epochs":100,
     "hidden_size":5,
     "activation":"sin"
 }
