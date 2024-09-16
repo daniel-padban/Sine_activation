@@ -1,5 +1,5 @@
 #!/bin/bash
-n_runs=10
+n_runs=100
 
 import subprocess
 import torch
