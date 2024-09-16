@@ -3,12 +3,12 @@
     "step_size":0.5,
     
     "train_start":0,
-    "train_end":100,
+    "train_end":1000,
     
-    "test_start":100,
-    "test_end":200,
+    "test_start":1000,
+    "test_end":2000,
 
-    "n_shift":1,
+    "n_shift":10,
     "batch_size":1,
     "seq_len":20,
 
@@ -18,6 +18,6 @@
     "w_decay":0,
 
     "n_epochs":100,
-    "hidden_size":5,
+    "hidden_size":10,
     "activation":"sin"
 }

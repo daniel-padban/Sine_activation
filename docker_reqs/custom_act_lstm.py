@@ -19,12 +19,6 @@ class CustomActivatedLSTMCell(nn.Module):
 
     def forward(self,x:torch.Tensor,state:tuple): 
         ht_1, ct_1 = state
-        input_dtype = x.dtype
-
-        '''self.w_ih = self.w_ih.to(dtype=input_dtype)
-        self.w_hh =  self.w_hh.to(dtype=input_dtype)
-        self.b_ih =  self.b_ih.to(dtype=input_dtype)
-        self.b_hh = self.b_hh.to(dtype=input_dtype)'''
 
         w_xf, w_xi, w_xic, w_xo = torch.chunk(self.w_ih,4,0,) #[hidden_size, input]
         w_hf, w_hi, w_hic, w_ho = torch.chunk(self.w_hh,4,0)
