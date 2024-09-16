@@ -3,12 +3,12 @@
     "step_size":0.5,
     
     "train_start":0,
-    "train_end":1000,
+    "train_end":100,
     
-    "test_start":1000,
-    "test_end":2000,
+    "test_start":100,
+    "test_end":200,
 
-    "n_shift":10,
+    "n_shift":1,
     "batch_size":1,
     "seq_len":20,
 

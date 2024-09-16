@@ -30,18 +30,12 @@ X_train = torch.arange(train_start,train_end,step_size)
 y_train = torch.sin(X_train)
 
 
-test_end = run.config['test_end']
-test_start = run.config['test_start']
-X_test = torch.arange(test_start,test_end,step_size)
-y_test = torch.sin(X_test)
-
 n_features = 1
 
 train_series = y_train
-test_series  = y_test
 
+#train data
 look_back = run.config['seq_len']
-
 train_dataset = []
 train_labels = []
 for i in range(len(train_series)-look_back):
@@ -76,8 +70,8 @@ optimizer = optim.Adam(model.parameters(), lr=run.config['lr'])
 
 loss_curve = []
 
-for epoch in range(run.config['n_epochs']):
-    print(f'---------- Epoch: {epoch+1} ----------')
+def train_loop_sub(epoch,model:nn.Module,optimizer,run,train_dataset,train_labels):
+    model.train(True)
     loss_total = 0
     
     model.zero_grad()
@@ -89,6 +83,39 @@ for epoch in range(run.config['n_epochs']):
     loss.backward()
     optimizer.step()
 
-    run.log({"Train_epoch": epoch,"train_loss":loss.item()})
+    run.log({"epoch": epoch,"train_loss":loss.item()})
+
+
+test_end = run.config['test_end']
+test_start = run.config['test_start']
+X_test = torch.arange(test_start,test_end,step_size)
+y_test = torch.sin(X_test)
+
+test_series = y_test
+
+test_dataset = []
+test_labels = []
+for i in range(len(test_series)-look_back):
+    test_dataset.append(test_series[i:i+look_back])
+    test_labels.append(test_series[i+look_back])
+test_dataset = torch.stack(test_dataset).unsqueeze(0).to(device=device)
+test_labels = torch.stack(test_labels).unsqueeze(0).unsqueeze(2).to(device=device)
+
+def test_loop_sub(epoch,model:nn.Module,run,test_dataset,test_labels):
+        model.eval()
+        loss_total = 0
+
+        with torch.no_grad():    
+            predictions = model(test_dataset)
+            
+            loss = loss_function(predictions, test_labels)
+            loss_total += loss.item()
+
+            run.log({"epoch": epoch,"test_loss":loss.item()})
+
+for epoch in range(run.config['n_epochs']):
+    print(f'---------- Epoch: {epoch+1} ----------')
+    train_loop_sub(epoch=epoch,model=model,optimizer=optimizer,run=run,train_dataset=train_dataset,train_labels=train_labels)
+    test_loop_sub(epoch=epoch,model=model,run=run,test_dataset=test_dataset,test_labels=test_labels)
 
 run.finish(exit_code=0)
