@@ -26,12 +26,12 @@ class CustomActivatedLSTMCell(nn.Module):
         
         #forget gate - reassigns ct_1
         ft_inputs = F.linear(x,w_xf,b_xf) + F.linear(ht_1,w_hf,b_hf)
-        ft = torch.sigmoid(ft_inputs)
-        ct_forget = ct_1*ft
+        ft = torch.sigmoid(ft_inputs) #forget gate
+        ct_forget = ct_1*ft #applied forget gate ct_forget = new ct
 
         #input gate
         it_inputs = F.linear(x,w_xi,b_xi) + F.linear(ht_1,w_hi,b_hi)
-        it = torch.sigmoid(it_inputs)
+        it = torch.sigmoid(it_inputs) #input gate
         
         #input candidates - new ct
         ic_inputs = F.linear(x,w_xic,b_xic) + F.linear(ht_1,w_hic,b_hic)
@@ -40,16 +40,21 @@ class CustomActivatedLSTMCell(nn.Module):
 
         #output gate
         ot_inputs = F.linear(x,w_xo,b_xo) + F.linear(ht_1,w_ho,b_ho)
-        ot = torch.sigmoid(ot_inputs)
+        ot = torch.sigmoid(ot_inputs) #output gate
 
         #output candidates
         o_cands = self.act_func(ct)
         ht:torch.Tensor = ot*o_cands
 
-        return ht, ct
+        return ht, ct, (ft,it,ot) #gates [1,hidden_size]
     
 class CustomLSTMLayer(nn.Module):
         def __init__(self, input_size, hidden_size, activation, batch_first = True):
+            '''
+                Returns outputs, (ht,ct), gates
+                
+                :Output gates: (ft, it, ot)
+            '''
             super().__init__()
             self.input_size = input_size
             self.hidden_size = hidden_size
@@ -58,6 +63,9 @@ class CustomLSTMLayer(nn.Module):
             self.batch_first = batch_first
 
         def forward(self, x:torch.Tensor, init_state = None):
+            '''
+            Returns outputs, (ht,ct), gates
+            '''
             if self.batch_first:
                 batch_size = x.size(0)
 
@@ -75,12 +83,12 @@ class CustomLSTMLayer(nn.Module):
             outputs = []
             for t in range(x.size(1)): #recurrent through seq_len
                 xt = x[:, t, :]
-                ht, ct = self.LSTMcell(xt,(ht,ct))
+                ht, ct, gates = self.LSTMcell(xt,(ht,ct))
                 outputs.append(ht)
 
             outputs = torch.stack(outputs) # [seq_len, batch_size, hidden]
             outputs = outputs.permute(1,0,2) #[batch_size, seq_len, hidden]
-            return outputs, (ht,ct)
+            return outputs, (ht,ct), gates
 
 if __name__ == '__main__':
     seq_len = 20

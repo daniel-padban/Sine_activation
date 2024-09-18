@@ -1,14 +1,22 @@
 import torch
-torch.manual_seed(100)
-torch.cuda.manual_seed(100)
-torch.cuda.manual_seed_all(100)
+
 import torch.nn as nn
 import torch.optim as optim
 from ka_SineNet import SineNet
 import wandb
 from trainer_def import json2dict
 from init_w import custom_init_weights
+import argparse
+import numpy as np
 
+parser = argparse.ArgumentParser()
+parser.add_argument('--seed', type=int, default=0)
+args = parser.parse_args()
+
+torch.manual_seed(args.seed)
+torch.cuda.manual_seed(args.seed)
+torch.cuda.manual_seed_all(args.seed)
+np.random.seed(args.seed)
 
 device = (
         'cuda'
@@ -20,7 +28,10 @@ device = (
 print(device)
 
 config_dict = json2dict('docker_reqs/config.json')
-run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L2-sin')
+name_str = f"Run-{config_dict['activation']}-S{args.seed}"
+run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L3-sin', name=name_str, notes='gate info available for L3 runs')
+
+run.config['seed'] = args.seed
 
 step_size = run.config['step_size']
 
@@ -76,14 +87,36 @@ def train_loop_sub(epoch,model:nn.Module,optimizer,run,train_dataset,train_label
     
     model.zero_grad()
     optimizer.zero_grad()
-    predictions, ct = model(train_dataset)
-    
+    predictions, ct, gates = model(train_dataset)
+
+    (ft, it, ot) = gates
+    ft_mean = ft.mean().item()
+    it_mean = it.mean().item()
+    ot_mean = ot.mean().item()
+
+    ft_hist = wandb.Histogram(ft.tolist())
+    it_hist = wandb.Histogram(it.tolist())
+    ot_hist = wandb.Histogram(ot.tolist())
+
     loss = loss_function(predictions, train_labels)
     loss_total += loss.item()
     loss.backward()
     optimizer.step()
 
-    run.log({"epoch": epoch,"train_loss":loss.item(),"train_ct":ct.mean().item()})
+    run.log({"epoch": epoch,
+            "train_loss":loss.item(),
+            "train_ct":ct.mean().item(),
+           
+            "train_ft":ft_hist,
+            "train_ft_mean":ft_mean,
+           
+            "train_it":it_hist,
+            "train_it_mean":it_mean,
+            
+            "train_ot":ot_hist,
+            "train_ot_mean":ot_mean,
+
+            })
 
 
 test_end = run.config['test_end']
@@ -106,12 +139,31 @@ def test_loop_sub(epoch,model:nn.Module,run,test_dataset,test_labels):
         loss_total = 0
 
         with torch.no_grad():    
-            predictions, ct = model(test_dataset)
+            predictions, ct, gates = model(test_dataset)
             
             loss = loss_function(predictions, test_labels)
             loss_total += loss.item()
 
-            run.log({"epoch": epoch,"test_loss":loss.item(), "test_ct":ct.mean().item()})
+            (ft, it, ot) = gates
+            ft_mean = ft.mean().item()
+            it_mean = it.mean().item()
+            ot_mean = ot.mean().item()
+
+            ft_hist = wandb.Histogram(ft.tolist())
+            it_hist = wandb.Histogram(it.tolist())
+            ot_hist = wandb.Histogram(ot.tolist())
+            run.log({"epoch": epoch,
+                    "test_loss":loss.item(),
+                    "test_ct":ct.mean().item(),
+           
+                    "test_ft":ft_hist,
+                    "test_ft_mean":ft_mean,
+           
+                    "test_it":it_hist,
+                    "test_it_mean":it_mean,
+           
+                    "test_ot":ot_hist,
+                    "test_ot_mean":ot_mean,})
 
 for epoch in range(run.config['n_epochs']):
     print(f'---------- Epoch: {epoch+1} ----------')
