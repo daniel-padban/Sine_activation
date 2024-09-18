@@ -20,7 +20,7 @@ device = (
 print(device)
 
 config_dict = json2dict('docker_reqs/config.json')
-run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L-tanh')
+run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L2-tanh')
 
 step_size = run.config['step_size']
 
@@ -76,14 +76,14 @@ def train_loop_sub(epoch,model:nn.Module,optimizer,run,train_dataset,train_label
     
     model.zero_grad()
     optimizer.zero_grad()
-    predictions = model(train_dataset)
+    predictions, ct = model(train_dataset)
     
     loss = loss_function(predictions, train_labels)
     loss_total += loss.item()
     loss.backward()
     optimizer.step()
 
-    run.log({"epoch": epoch,"train_loss":loss.item()})
+    run.log({"epoch": epoch,"train_loss":loss.item(),"train_ct":ct.mean().item()})
 
 
 test_end = run.config['test_end']
@@ -106,12 +106,12 @@ def test_loop_sub(epoch,model:nn.Module,run,test_dataset,test_labels):
         loss_total = 0
 
         with torch.no_grad():    
-            predictions = model(test_dataset)
+            predictions, ct = model(test_dataset)
             
             loss = loss_function(predictions, test_labels)
             loss_total += loss.item()
 
-            run.log({"epoch": epoch,"test_loss":loss.item()})
+            run.log({"epoch": epoch,"test_loss":loss.item(), "test_ct":ct.mean().item()})
 
 for epoch in range(run.config['n_epochs']):
     print(f'---------- Epoch: {epoch+1} ----------')
