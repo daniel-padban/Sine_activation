@@ -20,7 +20,7 @@ device = (
 print(device)
 
 config_dict = json2dict('docker_reqs/config.json')
-run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L2-tanh')
+run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L2-sin')
 
 step_size = run.config['step_size']
 
