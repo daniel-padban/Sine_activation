@@ -19,6 +19,6 @@
 
     "n_epochs":200,
     "hidden_size":10,
-    "activation":"sin"
+    "activation":"tanh"
 }
 

@@ -27,9 +27,9 @@ device = (
     )
 print(device)
 
-config_dict = json2dict('docker_reqs/config.json')
+config_dict = json2dict('config.json')
 name_str = f"Run-{config_dict['activation']}-S{args.seed}"
-run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L4-sin', name=name_str, notes='gate info available for L3 runs, sin + 3rd harmonic + 5th harmonix')
+run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L4-tanh', name=name_str, notes='gate info available for L3 runs, sin + 3rd harmonic + 5th harmonix')
 
 run.config['seed'] = args.seed
 
