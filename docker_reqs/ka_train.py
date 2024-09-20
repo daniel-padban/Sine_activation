@@ -29,7 +29,7 @@ print(device)
 
 config_dict = json2dict('docker_reqs/config.json')
 name_str = f"Run-{config_dict['activation']}-S{args.seed}"
-run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L4-tanh', name=name_str, notes='gate info available for L3 runs, sin + 3rd harmonic + 5th harmonix')
+run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L4-sin', name=name_str, notes='gate info available for L3 runs, sin + 3rd harmonic + 5th harmonix')
 
 run.config['seed'] = args.seed
 
@@ -39,7 +39,6 @@ train_start = run.config['train_start']
 train_end = run.config['train_end']
 X_train = torch.arange(train_start,train_end,step_size)
 y_train = np.sin(X_train) + np.sin(3*X_train)/3 + np.sin(5*X_train)/5
-
 
 n_features = 1
 
