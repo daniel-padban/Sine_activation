@@ -29,7 +29,7 @@ print(device)
 
 config_dict = json2dict('config.json')
 name_str = f"Run-{config_dict['activation']}-S{args.seed}"
-run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L6-tanh', name=name_str, notes='L6 - watch weights')
+run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L7-tanh', name=name_str, notes='L7 - sin targets with weight watch, hidden_size = 10')
 
 run.config['seed'] = args.seed
 
@@ -38,7 +38,7 @@ step_size = run.config['step_size']
 train_start = run.config['train_start']
 train_end = run.config['train_end']
 X_train = torch.arange(train_start,train_end,step_size)
-y_train = np.sin(X_train) + np.sin(3*X_train)/3 + np.sin(5*X_train)/5
+y_train = np.sin(X_train)
 
 n_features = 1
 
@@ -142,7 +142,7 @@ def train_loop_sub(epoch,model:nn.Module,optimizer,run,train_dataset,train_label
 test_end = run.config['test_end']
 test_start = run.config['test_start']
 X_test = torch.arange(test_start,test_end,step_size)
-y_test = np.sin(X_test) + np.sin(3*X_test)/3 + np.sin(5*X_test)/5
+y_test = np.sin(X_test)
 
 test_series = y_test
 

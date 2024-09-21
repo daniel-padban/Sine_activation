@@ -18,7 +18,7 @@
     "w_decay":0,
 
     "n_epochs":200,
-    "hidden_size":30,
+    "hidden_size":10,
     "activation":"tanh"
 }
 
