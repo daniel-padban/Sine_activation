@@ -159,7 +159,7 @@ def test_loop_sub(epoch,model:nn.Module,run,test_dataset,test_labels):
         loss_total = 0
 
         with torch.no_grad():    
-            predictions, ct, gates = model(test_dataset)
+            predictions, ct, gates, _,_,_ = model(test_dataset)
             
             loss = loss_function(predictions, test_labels)
             loss_total += loss.item()

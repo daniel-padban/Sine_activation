@@ -15,6 +15,6 @@ class SineNet(nn.Module):
 
     def forward(self, x):
        
-        lstm1_out,(_,ct), gates = self.lstm1(x)
+        lstm1_out,(_,ct), gates, f_weights, i_weights, o_weights = self.lstm1(x)
         output = self.fco(lstm1_out)
-        return output, ct, gates
+        return output, ct, gates, f_weights, i_weights, o_weights
