@@ -46,7 +46,7 @@ class CustomActivatedLSTMCell(nn.Module):
         o_cands = self.act_func(ct)
         ht:torch.Tensor = ot*o_cands
 
-        return ht, ct, (ft,it,ot) #gates [1,hidden_size]
+        return ht, ct, (ft,it,ot), (w_xf,w_hf), (w_xi,w_hi),(w_xo,w_ho) #gates [1,hidden_size]
     
 class CustomLSTMLayer(nn.Module):
         def __init__(self, input_size, hidden_size, activation, batch_first = True):
@@ -83,12 +83,12 @@ class CustomLSTMLayer(nn.Module):
             outputs = []
             for t in range(x.size(1)): #recurrent through seq_len
                 xt = x[:, t, :]
-                ht, ct, gates = self.LSTMcell(xt,(ht,ct))
+                ht, ct, gates, f_weights, i_weights, o_weights = self.LSTMcell(xt,(ht,ct))
                 outputs.append(ht)
 
             outputs = torch.stack(outputs) # [seq_len, batch_size, hidden]
             outputs = outputs.permute(1,0,2) #[batch_size, seq_len, hidden]
-            return outputs, (ht,ct), gates
+            return outputs, (ht,ct), gates, f_weights, i_weights, o_weights
 
 if __name__ == '__main__':
     seq_len = 20

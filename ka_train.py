@@ -29,7 +29,7 @@ print(device)
 
 config_dict = json2dict('config.json')
 name_str = f"Run-{config_dict['activation']}-S{args.seed}"
-run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L5-sin', name=name_str, notes='L5 - hidden size = 10 -> 30, sin + 3rd harmonic + 5th harmonix')
+run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L6-sin', name=name_str, notes='L6 - watch weights')
 
 run.config['seed'] = args.seed
 
@@ -86,8 +86,9 @@ def train_loop_sub(epoch,model:nn.Module,optimizer,run,train_dataset,train_label
     
     model.zero_grad()
     optimizer.zero_grad()
-    predictions, ct, gates = model(train_dataset)
+    predictions, ct, gates, f_weights, i_weights, o_weights  = model(train_dataset)
 
+    #get gate data
     (ft, it, ot) = gates
     ft_mean = ft.mean().item()
     it_mean = it.mean().item()
@@ -97,6 +98,21 @@ def train_loop_sub(epoch,model:nn.Module,optimizer,run,train_dataset,train_label
     it_hist = wandb.Histogram(it.tolist())
     ot_hist = wandb.Histogram(ot.tolist())
 
+    #get weight data
+    (w_xf,w_hf) = f_weights
+    (w_xi,w_hi) = i_weights
+    (w_xo,w_ho) = o_weights
+    #forget weights (gate)
+    w_xf_mean = w_xf.mean().item()
+    w_hf_mean = w_hf.mean().item()
+    #input weights
+    w_xi_mean = w_xi.mean().item()
+    w_hi_mean = w_hi.mean().item()
+    #output wights (gate)
+    w_xo_mean = w_xo.mean().item()
+    w_ho_mean = w_ho.mean().item()
+    
+    #loss:
     loss = loss_function(predictions, train_labels)
     loss_total += loss.item()
     loss.backward()
@@ -108,13 +124,18 @@ def train_loop_sub(epoch,model:nn.Module,optimizer,run,train_dataset,train_label
            
             "train_ft":ft_hist,
             "train_ft_mean":ft_mean,
+            "w_xf_mean":w_xf_mean,
+            "w_hf_mean":w_hf_mean,
            
             "train_it":it_hist,
             "train_it_mean":it_mean,
+            "w_xi_mean":w_xi_mean,
+            "w_hi_mean":w_hi_mean,
             
             "train_ot":ot_hist,
             "train_ot_mean":ot_mean,
-
+            "w_xo_mean":w_xo_mean,
+            "w_ho_mean":w_ho_mean,
             })
 
 
