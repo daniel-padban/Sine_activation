@@ -1,6 +1,6 @@
 #!/bin/bash
 n_runs=100
-start = 0
+start = 70
 import subprocess
 
 for i in range(start,n_runs):
