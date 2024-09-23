@@ -29,7 +29,7 @@ print(device)
 
 config_dict = json2dict('config.json')
 name_str = f"Run-{config_dict['activation']}-S{args.seed}"
-run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L8-sin', name=name_str, notes='L8 - sin + 3rd + 5th targets with weight watch, hidden_size = 40')
+run = wandb.init(project='Sine-Gates',config=config_dict,group='Ka-L8-tanh', name=name_str, notes='L8 - sin + 3rd + 5th targets with weight watch, hidden_size = 40')
 
 run.config['seed'] = args.seed
 
